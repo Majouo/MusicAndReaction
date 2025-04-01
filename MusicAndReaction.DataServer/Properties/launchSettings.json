@@ -1,0 +1,9 @@
+{
+  "profiles": {
+    "MusicAndReaction.DataServer": {
+      "commandName": "Project",
+      "commandLineArgs": "--port 7091",
+      "launchBrowser": false
+    }
+  }
+}
