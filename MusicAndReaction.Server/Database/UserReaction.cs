@@ -8,7 +8,7 @@ public class UserReaction
     [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
     public int Id { get; set; }
     public required int TrackId { get; set; }
-    public double ReactionTime { get; set; }
+    public int ReactionTime { get; set; }
     public DateTime AttemptDate { get; set; }
 }
 

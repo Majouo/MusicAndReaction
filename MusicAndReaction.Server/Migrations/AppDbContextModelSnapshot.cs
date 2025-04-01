@@ -26,8 +26,8 @@ namespace MusicAndReaction.Server.Migrations
                     b.Property<DateTime>("AttemptDate")
                         .HasColumnType("TEXT");
 
-                    b.Property<double>("ReactionTime")
-                        .HasColumnType("REAL");
+                    b.Property<int>("ReactionTime")
+                        .HasColumnType("INTEGER");
 
                     b.Property<int>("TrackId")
                         .HasColumnType("INTEGER");

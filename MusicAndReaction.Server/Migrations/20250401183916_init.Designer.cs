@@ -11,7 +11,7 @@ using MusicAndReaction.Server.Database;
 namespace MusicAndReaction.Server.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20250401180408_init")]
+    [Migration("20250401183916_init")]
     partial class init
     {
         /// <inheritdoc />
@@ -29,8 +29,8 @@ namespace MusicAndReaction.Server.Migrations
                     b.Property<DateTime>("AttemptDate")
                         .HasColumnType("TEXT");
 
-                    b.Property<double>("ReactionTime")
-                        .HasColumnType("REAL");
+                    b.Property<int>("ReactionTime")
+                        .HasColumnType("INTEGER");
 
                     b.Property<int>("TrackId")
                         .HasColumnType("INTEGER");

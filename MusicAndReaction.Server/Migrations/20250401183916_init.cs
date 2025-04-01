@@ -18,7 +18,7 @@ namespace MusicAndReaction.Server.Migrations
                     Id = table.Column<int>(type: "INTEGER", nullable: false)
                         .Annotation("Sqlite:Autoincrement", true),
                     TrackId = table.Column<int>(type: "INTEGER", nullable: false),
-                    ReactionTime = table.Column<double>(type: "REAL", nullable: false),
+                    ReactionTime = table.Column<int>(type: "INTEGER", nullable: false),
                     AttemptDate = table.Column<DateTime>(type: "TEXT", nullable: false)
                 },
                 constraints: table =>
