@@ -3,7 +3,7 @@ import './App.css';
 import Waveform from './Waveform';
 
 // Komponent mierz¹cy czas reakcji w dwóch trybach (afterStart i afterStop)
-const ReactionTimer = ({ stopDelay, wavesurfer }) => {
+const ReactionTimer = ({ stopDelay, wavesurfer, trackId }) => {
     const [mode, setMode] = useState('afterStop');
     const [reactionTime, setReactionTime] = useState(null);
     const [musicPlaying, setMusicPlaying] = useState(false);
@@ -82,14 +82,26 @@ const ReactionTimer = ({ stopDelay, wavesurfer }) => {
             await fetch('api/reaction', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ reactionTime: reaction, mode }),
+                body: JSON.stringify({ reactionTime: reaction, mode, trackId }),
             });
         } catch (error) {
             console.error('B³¹d wysy³ania wyniku:', error);
         }
     };
 
-    useEffect(() => () => clearAll(), []);
+    useEffect(() => {
+        const handleKeyDown = (e) => {
+            if (e.code === 'Space' && canReact) {
+                e.preventDefault();
+                handleUserReaction();
+            }
+        };
+        window.addEventListener('keydown', handleKeyDown);
+        return () => {
+            clearAll();
+            window.removeEventListener('keydown', handleKeyDown);
+        };
+    }, [canReact]);
 
     return (
         <div style={{ paddingBottom: '100px' }}>
@@ -132,6 +144,7 @@ const ReactionTimer = ({ stopDelay, wavesurfer }) => {
 const App = () => {
     const [trackUrl, setTrackUrl] = useState(null);
     const [stopDelay, setStopDelay] = useState(null);
+    const [trackId, setTrackId] = useState(null);
     const wavesurferRef = useRef(null);
 
     const fetchMusicSession = async () => {
@@ -143,6 +156,7 @@ const App = () => {
             const data = await response.json();
             setTrackUrl(data.trackUrl);
             setStopDelay(data.stopTime);
+            setTrackId(data.trackId);
         } catch (error) {
             console.error('B³¹d pobierania sesji muzycznej:', error);
         }
@@ -152,13 +166,13 @@ const App = () => {
         fetchMusicSession();
     }, []);
 
-    if (trackUrl === null || stopDelay === null) {
+    if (trackUrl === null || stopDelay === null || trackId === null) {
         return <p>£adowanie sesji muzycznej...</p>;
     }
 
     return (
         <div>
-            <ReactionTimer stopDelay={stopDelay} wavesurfer={wavesurferRef} />
+            <ReactionTimer stopDelay={stopDelay} wavesurfer={wavesurferRef} trackId={trackId} />
             <Waveform audioUrl={trackUrl} wavesurferRef={wavesurferRef} />
         </div>
     );

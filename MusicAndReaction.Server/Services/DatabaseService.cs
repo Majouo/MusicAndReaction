@@ -17,6 +17,7 @@ public class DatabaseService(AppDbContext context) : IDatabaseService
             AttemptDate = DateTime.Now,
             ReactionTime = newReaction.ReactionTime,
             TrackId = newReaction.TrackId,
+            Mode = newReaction.Mode,
         });
 
         await context.SaveChangesAsync();

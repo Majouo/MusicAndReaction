@@ -9,6 +9,7 @@ public class UserReaction
     public int Id { get; set; }
     public required int TrackId { get; set; }
     public int ReactionTime { get; set; }
+    public string Mode { get; set; }
     public DateTime AttemptDate { get; set; }
 }
 
