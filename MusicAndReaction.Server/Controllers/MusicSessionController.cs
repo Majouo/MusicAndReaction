@@ -22,13 +22,15 @@ public class MusicSessionController : ControllerBase
     public IActionResult GetMusicSession()
     {
         // Losowy wybór utworu
-        var selectedTrack = MusicTracks[RandomGen.Next(MusicTracks.Count)];
+        int random = RandomGen.Next(MusicTracks.Count);
+        var selectedTrack = MusicTracks[random];
 
         // Losowy czas zatrzymania muzyki (3 - 7 sekund)
         var stopTime = RandomGen.Next(1000, 90000);
 
         return Ok(new
         {
+            trackId = random,
             trackUrl = selectedTrack,
             stopTime = stopTime
         });
