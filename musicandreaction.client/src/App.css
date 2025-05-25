@@ -5,6 +5,11 @@
     text-align: center;
 }
 
+body {
+    font-family: 'Lato', sans-serif;
+}
+
+
 tr:nth-child(even) {
     background: #404040;
 }
@@ -12,7 +17,7 @@ tr:nth-child(even) {
 tr:nth-child(odd) {
     background: #4d4d4d;
 }
-
+ 
 th, td {
     padding-left: 1rem;
     padding-right: 1rem;

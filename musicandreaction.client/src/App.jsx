@@ -1,11 +1,11 @@
-import React, { useState, useRef, useEffect } from 'react';
+Ôªøimport React, { useState, useRef, useEffect } from 'react';
 import { useSpring, animated } from '@react-spring/web';
 import Waveform from './Waveform';
 import './App.css';
 
-// Komponent mierzπcy czas reakcji
+// Komponent mierzƒÖcy czas reakcji
 const ReactionTimer = ({ stopDelay, wavesurfer, trackId, onTriggerFlash }) => {
-    const [mode, setMode] = useState('afterStop');
+    const [mode, setMode] = useState('afterStop'); // 'afterStop' | 'afterStart' | 'inMiddle'
     const [reactionTime, setReactionTime] = useState(null);
     const [musicPlaying, setMusicPlaying] = useState(false);
     const [canReact, setCanReact] = useState(false);
@@ -14,15 +14,16 @@ const ReactionTimer = ({ stopDelay, wavesurfer, trackId, onTriggerFlash }) => {
     const startTimeRef = useRef(null);
     const playTimeoutRef = useRef(null);
     const pauseTimeoutRef = useRef(null);
+    const middleTimeoutRef = useRef(null);
 
-    // Animacja rosnπcej wartoúci elapsedTime
+    // Animacja rosnƒÖcej warto≈õci elapsedTime
     const { number } = useSpring({
         from: { number: 0 },
         number: elapsedTime,
         config: { tension: 170, friction: 26 }
     });
 
-    // Start pomiaru i interwa≥u
+    // Efekt aktualizujƒÖcy elapsedTime i triggerujƒÖcy flash
     useEffect(() => {
         let interval;
         if (canReact) {
@@ -37,6 +38,7 @@ const ReactionTimer = ({ stopDelay, wavesurfer, trackId, onTriggerFlash }) => {
     const clearAll = () => {
         clearTimeout(playTimeoutRef.current);
         clearTimeout(pauseTimeoutRef.current);
+        clearTimeout(middleTimeoutRef.current);
     };
 
     const startSession = () => {
@@ -47,10 +49,7 @@ const ReactionTimer = ({ stopDelay, wavesurfer, trackId, onTriggerFlash }) => {
         setCanReact(false);
         setMusicPlaying(true);
 
-        const startNow = () => {
-            wavesurfer.current.seekTo(0);
-            wavesurfer.current.play();
-            setMusicPlaying(true);
+        const triggerMeasurement = () => {
             startTimeRef.current = Date.now();
             setCanReact(true);
         };
@@ -61,10 +60,24 @@ const ReactionTimer = ({ stopDelay, wavesurfer, trackId, onTriggerFlash }) => {
             pauseTimeoutRef.current = setTimeout(() => {
                 wavesurfer.current.pause();
                 setMusicPlaying(false);
-                startNow();
+                triggerMeasurement();
             }, stopDelay);
-        } else {
-            playTimeoutRef.current = setTimeout(startNow, stopDelay);
+
+        } else if (mode === 'afterStart') {
+            playTimeoutRef.current = setTimeout(() => {
+                wavesurfer.current.seekTo(0);
+                wavesurfer.current.play();
+                setMusicPlaying(true);
+                triggerMeasurement();
+            }, stopDelay);
+
+        } else if (mode === 'inMiddle') {
+            wavesurfer.current.seekTo(0);
+            wavesurfer.current.play();
+            setMusicPlaying(true);
+            middleTimeoutRef.current = setTimeout(() => {
+                triggerMeasurement();
+            }, stopDelay);
         }
     };
 
@@ -85,11 +98,11 @@ const ReactionTimer = ({ stopDelay, wavesurfer, trackId, onTriggerFlash }) => {
                 body: JSON.stringify({ reactionTime: reaction, mode, trackId }),
             });
         } catch (error) {
-            console.error('B≥πd wysy≥ania wyniku:', error);
+            console.error('B≈ÇƒÖd wysy≈Çania wyniku:', error);
         }
     };
 
-    // obs≥uga spacji do reakcji
+    // obs≈Çuga spacji do reakcji
     useEffect(() => {
         const handleKeyDown = (e) => {
             if (e.code === 'Space' && canReact) {
@@ -112,8 +125,9 @@ const ReactionTimer = ({ stopDelay, wavesurfer, trackId, onTriggerFlash }) => {
                         onChange={e => setMode(e.target.value)}
                         disabled={musicPlaying || canReact}
                     >
-                        <option value="afterStop">Po zakoÒczeniu muzyki</option>
-                        <option value="afterStart">Po rozpoczÍciu muzyki</option>
+                        <option value="afterStop">Po zako≈Ñczeniu muzyki</option>
+                        <option value="afterStart">Po rozpoczƒôciu muzyki</option>
+                        <option value="inMiddle">Podczas odtwarzania</option>
                     </select>
                 </label>
             </div>
@@ -130,24 +144,41 @@ const ReactionTimer = ({ stopDelay, wavesurfer, trackId, onTriggerFlash }) => {
 
             {canReact && (
                 <p style={{ marginTop: '20px' }}>
-                    Czas od {mode === 'afterStop' ? 'zakoÒczenia' : 'rozpoczÍcia'} muzyki:{' '}
-                    <animated.span>{number.to(n => Math.floor(n))}</animated.span> ms
+                    Czas od{' '}
+                    {mode === 'afterStop'
+                        ? 'zako≈Ñczenia'
+                        : mode === 'afterStart'
+                            ? 'rozpoczƒôcia'
+                            : 'wyzwolenia pomiaru'}{' '}
+                    muzyki:{' '}
+                    <animated.span>
+                        {number.to(n => Math.floor(n))}
+                    </animated.span>{' '}
+                    ms
                 </p>
             )}
-            {reactionTime !== null && <p>TwÛj czas reakcji: {reactionTime} ms</p>}
+            {reactionTime !== null && <p>Tw√≥j czas reakcji: {reactionTime} ms</p>}
         </div>
     );
 };
 
-// G≥Ûwny komponent aplikacji
+// G≈Ç√≥wny komponent aplikacji
 const App = () => {
     const [trackUrl, setTrackUrl] = useState(null);
     const [stopDelay, setStopDelay] = useState(null);
     const [trackId, setTrackId] = useState(null);
+    const [volume, setVolume] = useState(1);
     const wavesurferRef = useRef(null);
     const [flash, setFlash] = useState(false);
 
-    // Pe≥noekranowy overlay przyciemnienia
+    // Ustawianie g≈Ço≈õno≈õci
+    useEffect(() => {
+        if (wavesurferRef.current) {
+            wavesurferRef.current.setVolume(volume);
+        }
+    }, [volume]);
+
+    // Pe≈Çnoekranowy overlay przyciemnienia
     const overlayStyle = useSpring({
         from: { opacity: 0 },
         to: { opacity: flash ? 0.5 : 0 },
@@ -164,21 +195,43 @@ const App = () => {
     const fetchMusicSession = async () => {
         try {
             const response = await fetch('api/MusicSession');
-            if (!response.ok) throw new Error(`B≥πd API: ${response.status}`);
+            if (!response.ok) throw new Error(`B≈ÇƒÖd API: ${response.status}`);
             const data = await response.json();
             setTrackUrl(data.trackUrl);
             setStopDelay(data.stopTime);
             setTrackId(data.trackId);
         } catch (error) {
-            console.error('B≥πd pobierania sesji muzycznej:', error);
+            console.error('B≈ÇƒÖd pobierania sesji muzycznej:', error);
         }
     };
 
     useEffect(() => { fetchMusicSession(); }, []);
-    if (!trackUrl || stopDelay == null || !trackId) return <p>£adowanie sesji muzycznej...</p>;
+    if (!trackUrl || stopDelay == null || trackId == null) return <p>≈Åadowanie sesji muzycznej‚Ä¶</p>;
 
     return (
         <>
+            {/* Suwak g≈Ço≈õno≈õci w prawym g√≥rnym rogu */}
+            <div style={{
+                position: 'fixed',
+                top: '10px',
+                right: '10px',
+                background: 'rgba(255,255,255,0.8)',
+                padding: '8px',
+                borderRadius: '4px',
+                zIndex: 10000,
+                display: 'flex', alignItems: 'center', gap: '6px'
+            }}>
+                <span>üîä</span>
+                <input
+                    type="range"
+                    min="0"
+                    max="1"
+                    step="0.01"
+                    value={volume}
+                    onChange={e => setVolume(parseFloat(e.target.value))}
+                />
+            </div>
+
             <animated.div
                 style={{
                     ...overlayStyle,
