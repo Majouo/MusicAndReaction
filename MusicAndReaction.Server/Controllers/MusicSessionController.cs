@@ -2,6 +2,7 @@
 using MusicAndReaction.Server.Database;
 using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace MusicAndReaction.Server.Controllers;
 
@@ -9,29 +10,30 @@ namespace MusicAndReaction.Server.Controllers;
 [Route("api/[controller]")]
 public class MusicSessionController : ControllerBase
 {
-    private static readonly List<string> MusicTracks = new()
-        {
-            "/music/track1.mp3",
-            "/music/track2.mp3",
-            "/music/track3.mp3"
-        };
 
     private static readonly Random RandomGen = new();
 
+    private readonly IDatabaseService _databaseService;
+
+    public MusicSessionController(IDatabaseService databaseService)
+    {
+        _databaseService = databaseService;
+    }
+
     [HttpGet]
-    public IActionResult GetMusicSession()
+    public async Task<IActionResult> GetMusicSession()
     {
         // Losowy wybór utworu
-        int random = RandomGen.Next(MusicTracks.Count);
-        var selectedTrack = MusicTracks[random];
+        int tracksCount = await _databaseService.GetMusicTrackCount();
+        int random = RandomGen.Next(1,tracksCount);
+        MusicFileDto selectedTrack = await _databaseService.GetMusicTrackGetById(random);
 
-        // Losowy czas zatrzymania muzyki (3 - 7 sekund)
-        var stopTime = RandomGen.Next(1000, 90000);
+        var stopTime = RandomGen.Next(1000, 30000);
 
         return Ok(new
         {
             trackId = random,
-            trackUrl = selectedTrack,
+            trackUrl = "/music/"+selectedTrack.FileName,
             stopTime = stopTime
         });
     }

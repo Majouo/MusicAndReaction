@@ -8,6 +8,14 @@ public class DatabaseService(AppDbContext context) : IDatabaseService
     public async Task<List<int>> GetDataForMusic(int trackid) => await context.UserReactions.Where(x => x.TrackId == trackid).Select(x=>x.ReactionTime).ToListAsync();
     public async Task<List<int>> GetOrderByForMusic(int trackid) => await context.UserReactions.Where(x => x.TrackId == trackid).OrderBy(x => x.ReactionTime).Select(x => x.ReactionTime).ToListAsync();
     public async Task<List<ReactionDTO>> GetOrderByDataList() => await context.UserReactions.OrderBy(x => x.ReactionTime).ToDto().ToListAsync();
+    public async Task<MusicFileDto> GetMusicTrackGetById(int trackid) => await context.MusicFiles.AsNoTracking().Select(m => new MusicFileDto
+    {
+        Id = m.Id,
+        FileName = m.FileName,
+        Hash = m.Hash
+    }).Where(x => x.Id == trackid).FirstOrDefaultAsync();
+
+    public async Task<int> GetMusicTrackCount() => await context.MusicFiles.CountAsync()+1;
     #endregion
 
     public async Task AddReaction(ReactionDTO newReaction)

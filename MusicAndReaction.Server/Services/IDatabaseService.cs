@@ -7,4 +7,6 @@ public interface IDatabaseService
     Task<List<int>> GetDataForMusic(int trackid);
     Task<List<int>> GetOrderByForMusic(int trackid);
     Task<List<ReactionDTO>> GetOrderByDataList();
+    Task<MusicFileDto> GetMusicTrackGetById(int trackid);
+    Task<int> GetMusicTrackCount();
 }
