@@ -5,6 +5,8 @@
 Przy uruchomieniu z wykorzystaniem dockera należy uruchomić następujące komendy w folderze z plikiem Dockerfile.
 ```bash
 docker build . -t musicandreaction:1.0.0
+```
+```bash
 docker run -p 8080:8080 musicandreaction:1.0.0
 ```
 Następnie aplikacja powinna być dostępna w przeglądarce pod adresem localhost:8080
